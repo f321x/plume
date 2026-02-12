@@ -25,6 +25,7 @@ dependencies = [
 
 [project.scripts]
 plume = "plume.gui:main"
+plume-cli = "plume.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

@@ -15,34 +15,11 @@ from electrum_aionostr.util import normalize_url
 from aiohttp_socks import ProxyConnector
 
 from .core import NostrFileAuthenticityTool
+from .config import save_user_config, load_user_config, get_default_relays, get_default_trusted_npubs
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# Load defaults from defaults.json
-try:
-    with open(os.path.join(os.path.dirname(__file__), 'defaults.json'), 'r') as f:
-        defaults = json.load(f)
-    DEFAULT_TRUSTED_NPUBS = set(defaults['trusted_npubs'])
-    DEFAULT_RELAYS = set(normalize_url(url) for url in defaults["relays"])
-except Exception as e:
-    logger.error(f"Failed to load defaults.json: {e}")
-    DEFAULT_TRUSTED_NPUBS = set()
-    DEFAULT_RELAYS = set()
-
-CONFIG_DIR = platformdirs.user_config_dir("plume")
-CONFIG_FILE = os.path.join(CONFIG_DIR, "preferences.json")
-
-
-def load_config() -> Dict[str, Any]:
-    if os.path.exists(CONFIG_FILE):
-        try:
-            with open(CONFIG_FILE, 'r') as f:
-                return json.load(f)
-        except Exception as e:
-            logger.error(f"Failed to load config: {e}")
-    return {}
 
 
 class AuthenticityToolApp(tk.Tk):
@@ -58,9 +35,9 @@ class AuthenticityToolApp(tk.Tk):
         except Exception as e:
             logger.warning(f"Could not load icon: {e}")
 
-        self.config_data = load_config()
-        self.trusted_npubs = set(self.config_data.get("trusted_npubs", list(DEFAULT_TRUSTED_NPUBS)))
-        self.relays = set(self.config_data.get("relays", list(DEFAULT_RELAYS)))
+        self.config_data = load_user_config()
+        self.trusted_npubs = set(self.config_data.get("trusted_npubs", get_default_trusted_npubs()))
+        self.relays = set(self.config_data.get("relays", get_default_relays()))
         self.proxy_url = self.config_data.get("proxy_url", "")
         self.min_sigs = 2
 
@@ -82,11 +59,8 @@ class AuthenticityToolApp(tk.Tk):
             "proxy_url": self.proxy_url
         }
         try:
-            os.makedirs(CONFIG_DIR, exist_ok=True)
-            with open(CONFIG_FILE, 'w') as f:
-                json.dump(data, f, indent=2)
+            save_user_config(data)
         except Exception as e:
-            logger.error(f"Failed to save config: {e}")
             messagebox.showerror("Error", f"Failed to save configuration: {e}")
 
     def create_widgets(self):
@@ -153,7 +127,7 @@ class AuthenticityToolApp(tk.Tk):
 
         def restore_defaults():
             text_area.delete("1.0", tk.END)
-            text_area.insert(tk.END, '\n'.join(sorted(list(DEFAULT_TRUSTED_NPUBS))))
+            text_area.insert(tk.END, '\n'.join(sorted(list(get_default_trusted_npubs()))))
 
         btn_frame = ttk.Frame(dialog)
         btn_frame.pack(pady=10)
@@ -184,7 +158,7 @@ class AuthenticityToolApp(tk.Tk):
 
         def restore_defaults():
             text_area.delete("1.0", tk.END)
-            text_area.insert(tk.END, '\n'.join(sorted(list(DEFAULT_RELAYS))))
+            text_area.insert(tk.END, '\n'.join(sorted(list(get_default_relays()))))
 
         btn_frame = ttk.Frame(dialog)
         btn_frame.pack(pady=10)
