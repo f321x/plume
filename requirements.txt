@@ -1,0 +1,7 @@
+aiohttp~=3.13
+electrum-aionostr~=0.1
+electrum-ecc>=0.0.6
+pycryptodomex~=3.23
+aiohttp-socks~=0.11
+certifi~=2026.1
+platformdirs~=4.5

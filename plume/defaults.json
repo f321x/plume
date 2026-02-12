@@ -1,0 +1,14 @@
+{
+  "trusted_npubs": [
+    "npub1z9n5ktfjrlpyywds9t7ljekr9cm9jjnzs27h702te5fy8p2c4dgs5zvycf"
+  ],
+  "relays": [
+    "wss://relay.damus.io",
+    "wss://nos.lol",
+    "wss://relay.primal.net",
+    "wss://ftp.halifax.rwth-aachen.de/nostr",
+    "wss://nostr.einundzwanzig.space",
+    "wss://eu.purplerelay.com",
+    "wss://nostr.mom"
+  ]
+}
