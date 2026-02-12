@@ -1,6 +1,7 @@
 import asyncio
 import json
 import hashlib
+import sys
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import threading
@@ -73,12 +74,14 @@ class AuthenticityToolApp(tk.Tk):
         self.config(menu=menubar)
 
         tools_menu = tk.Menu(menubar, tearoff=0)
-        menubar.add_cascade(label="Tools", menu=tools_menu)
-        tools_menu.add_command(label="Configure Trusted Pubkeys", command=self.configure_trusted_pubkeys)
-        tools_menu.add_command(label="Configure Relays", command=self.configure_relays)
-        tools_menu.add_command(label="Configure Proxy", command=self.configure_proxy)
+        menubar.add_cascade(label="Tools", menu=tools_menu, underline=0)
+        tools_menu.add_command(label="Configure Trusted Pubkeys", command=self.configure_trusted_pubkeys, underline=10)
+        tools_menu.add_command(label="Configure Relays", command=self.configure_relays, underline=10)
+        tools_menu.add_command(label="Configure Proxy", command=self.configure_proxy, underline=10)
         tools_menu.add_separator()
-        tools_menu.add_command(label="Sign File", command=self.sign_file_dialog)
+        tools_menu.add_command(label="Sign File", command=self.sign_file_dialog, underline=0)
+        tools_menu.add_separator()
+        tools_menu.add_command(label="Quit", command=lambda: sys.exit(0), underline=0)
 
         # Description
         ttk.Label(main_frame, text="Select a file you want to verify against your trusted signers.", wraplength=580).pack(pady=10)
