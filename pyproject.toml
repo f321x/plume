@@ -27,19 +27,11 @@ dependencies = [
 plume = "plume.gui:main"
 plume-cli = "plume.cli:main"
 
+[tool.setuptools]
+include-package-data = true
+
 [tool.setuptools.packages.find]
 where = ["."]
 
-[tool.cibuildwheel]
-# Skip 32-bit builds and PyPy
-skip = ["*-win32", "*-manylinux_i686", "pp*"]
-
-# Test the wheels after building to ensure they work
-test-command = "python -m unittest discover {project}/tests"
-
-[tool.cibuildwheel.linux]
-# Install system libraries required for compilation
-before-all = "yum install -y gcc make autoconf automake libtool"
-
-[tool.cibuildwheel.macos]
-before-all = "brew install gcc make autoconf automake libtool"
+[tool.setuptools.package-data]
+plume = ["*.json", "*.png"]
