@@ -1,4 +1,4 @@
-# plume
+# Plume - Nostr File Authenticity Tool
 
 A tool to sign and verify files using Nostr. Think GPG, but user-friendly.
 

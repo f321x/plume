@@ -251,11 +251,12 @@ class AuthenticityToolApp(tk.Tk):
 
         def save():
             self.proxy_url = proxy_entry.get().strip()
-            proxy_connector = asyncio.run_coroutine_threadsafe(self.get_proxy_connector(), self.loop).result()
-            if not proxy_connector:
-                messagebox.showerror("Error", f"Invalid proxy url: {self.proxy_url}", parent=dialog)
-                self.proxy_url = ""
-                return
+            if self.proxy_url:
+                proxy_connector = asyncio.run_coroutine_threadsafe(self.get_proxy_connector(), self.loop).result()
+                if not proxy_connector:
+                    messagebox.showerror("Error", f"Invalid proxy url: {self.proxy_url}", parent=dialog)
+                    self.proxy_url = ""
+                    return
             dialog.destroy()
             self.save_config()
 
