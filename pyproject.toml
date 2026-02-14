@@ -7,7 +7,7 @@ name = "plume"
 version = "0.1.0"
 description = "A tool to sign and verify files using Nostr. Think GPG, but user-friendly"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
