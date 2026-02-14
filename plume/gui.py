@@ -37,7 +37,7 @@ class AuthenticityToolApp(tk.Tk):
             logger.warning(f"Could not load icon: {e}")
 
         self.config_data = load_user_config()
-        self.trusted_npubs = set(self.config_data.get("trusted_npubs", get_default_trusted_npubs()))
+        self.trusted_npubs = self.config_data.get("trusted_npubs", get_default_trusted_npubs())
         self.relays = set(self.config_data.get("relays", get_default_relays()))
         self.proxy_url = self.config_data.get("proxy_url", "")
         self.min_sigs = 2
@@ -55,7 +55,7 @@ class AuthenticityToolApp(tk.Tk):
 
     def save_config(self):
         data = {
-            "trusted_npubs": list(self.trusted_npubs),
+            "trusted_npubs": self.trusted_npubs,
             "relays": list(self.relays),
             "proxy_url": self.proxy_url
         }
@@ -100,42 +100,110 @@ class AuthenticityToolApp(tk.Tk):
     def configure_trusted_pubkeys(self):
         dialog = tk.Toplevel(self)
         dialog.title("Configure Trusted Pubkeys")
-        dialog.geometry("500x400")
+        dialog.geometry("600x400")
+        dialog.minsize(600, 400)
         dialog.transient(self)
         dialog.grab_set()
 
         ttk.Label(dialog, text="Trusted public keys (npubs):").pack(pady=5)
 
-        text_area = tk.Text(dialog, height=15, width=60)
-        text_area.pack(pady=5, padx=10)
-        text_area.insert(tk.END, '\n'.join(sorted(list(self.trusted_npubs))))
+        # Frame for Treeview and Scrollbar
+        tree_frame = ttk.Frame(dialog)
+        tree_frame.pack(pady=5, padx=10, fill=tk.BOTH, expand=True)
 
-        def save():
-            content = text_area.get("1.0", tk.END).strip()
-            if not content:
-                self.trusted_npubs = set()
-            else:
-                npubs = set(content.split())
-                valid_npubs = set()
-                for npub in npubs:
-                    try:
-                        NostrPublicKey.from_npub(npub)
-                        valid_npubs.add(npub)
-                    except Exception:
-                        messagebox.showerror("Error", f"Invalid pubkey: {npub}", parent=dialog)
-                        return
-                self.trusted_npubs = valid_npubs
-            self.save_config()
-            dialog.destroy()
+        # Treeview for displaying npubs and names
+        columns = ("npub", "name")
+        tree = ttk.Treeview(tree_frame, columns=columns, show="headings", height=10)
+        tree.heading("npub", text="Npub")
+        tree.heading("name", text="Name")
+        tree.column("npub", width=350)
+        tree.column("name", width=150)
+        
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(tree_frame, orient=tk.VERTICAL, command=tree.yview)
+        tree.configure(yscroll=scrollbar.set)
+        
+        tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        def restore_defaults():
-            text_area.delete("1.0", tk.END)
-            text_area.insert(tk.END, '\n'.join(sorted(list(get_default_trusted_npubs()))))
+        def populate_tree():
+            for item in tree.get_children():
+                tree.delete(item)
+            for npub, name in self.trusted_npubs.items():
+                tree.insert("", tk.END, values=(npub, name))
+
+        populate_tree()
+
+        def add_npub_dialog():
+            add_dialog = tk.Toplevel(dialog)
+            add_dialog.title("Add Trusted Npub")
+            add_dialog.geometry("430x150")
+            add_dialog.transient(dialog)
+            add_dialog.grab_set()
+
+            input_frame = ttk.Frame(add_dialog, padding="10")
+            input_frame.pack(fill=tk.BOTH, expand=True)
+
+            ttk.Label(input_frame, text="Npub:").grid(row=0, column=0, padx=5, pady=5, sticky=tk.W)
+            npub_entry = ttk.Entry(input_frame, width=40)
+            npub_entry.grid(row=0, column=1, padx=5, pady=5, sticky=tk.W)
+
+            ttk.Label(input_frame, text="Name:").grid(row=1, column=0, padx=5, pady=5, sticky=tk.W)
+            name_entry = ttk.Entry(input_frame, width=20)
+            name_entry.grid(row=1, column=1, padx=5, pady=5, sticky=tk.W)
+
+            def save_npub():
+                npub = npub_entry.get().strip()
+                name = name_entry.get().strip()
+
+                if not npub:
+                    messagebox.showerror("Error", "Npub cannot be empty", parent=add_dialog)
+                    return
+                
+                if not name:
+                    messagebox.showerror("Error", "Name cannot be empty", parent=add_dialog)
+                    return
+
+                try:
+                    NostrPublicKey.from_npub(npub)
+                except Exception:
+                    messagebox.showerror("Error", f"Invalid pubkey: {npub}", parent=add_dialog)
+                    return
+
+                self.trusted_npubs[npub] = name
+                populate_tree()
+                self.save_config()
+                add_dialog.destroy()
+
+            ttk.Button(input_frame, text="Add", command=save_npub).grid(row=2, column=1, pady=10, sticky=tk.E)
+
+        def remove_selected(event=None):
+            selected_item = tree.selection()
+            if not selected_item:
+                return
+            
+            item = tree.item(selected_item)
+            npub = item['values'][0]
+            if npub in self.trusted_npubs:
+                del self.trusted_npubs[npub]
+                populate_tree()
+                self.save_config()
+
+        # Bind Delete key to remove_selected
+        tree.bind("<Delete>", remove_selected)
 
         btn_frame = ttk.Frame(dialog)
         btn_frame.pack(pady=10)
+        
+        ttk.Button(btn_frame, text="Add", command=add_npub_dialog).pack(side=tk.LEFT, padx=5)
+        ttk.Button(btn_frame, text="Remove Selected", command=remove_selected).pack(side=tk.LEFT, padx=5)
+
+        def restore_defaults():
+            self.trusted_npubs = get_default_trusted_npubs()
+            populate_tree()
+            self.save_config()
+
         ttk.Button(btn_frame, text="Restore Defaults", command=restore_defaults).pack(side=tk.LEFT, padx=5)
-        ttk.Button(btn_frame, text="Save", command=save).pack(side=tk.LEFT, padx=5)
 
     def configure_relays(self):
         dialog = tk.Toplevel(self)
@@ -303,7 +371,7 @@ class AuthenticityToolApp(tk.Tk):
             self.select_file_btn.state(['!disabled'])
             return
 
-        trusted_pubkeys = set(NostrPublicKey.from_npub(npub).hex() for npub in self.trusted_npubs)
+        trusted_pubkeys = set(NostrPublicKey.from_npub(npub).hex() for npub in self.trusted_npubs.keys())
 
         self.status_label.config(text="Verifying...", foreground="black")
 

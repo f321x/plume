@@ -165,5 +165,21 @@ class TestCLI(unittest.TestCase):
         loaded_config = config.load_user_config()
         self.assertEqual(loaded_config["proxy_url"], "socks5://localhost:9050")
 
+    def test_config_command_add_trusted(self):
+        args = argparse.Namespace(
+            list=False,
+            add_relay=None,
+            remove_relay=None,
+            add_trusted="npub1qnl6hqnvuarlhejyr8s7d099esfuxamftaer407t0zcndhxfncsszlxzh7",
+            remove_trusted=None,
+            set_proxy=None,
+            unset_proxy=False
+        )
+        cli.config_command(args)
+        
+        loaded_config = config.load_user_config()
+        self.assertIn("npub1qnl6hqnvuarlhejyr8s7d099esfuxamftaer407t0zcndhxfncsszlxzh7", loaded_config["trusted_npubs"])
+        self.assertEqual(loaded_config["trusted_npubs"]["npub1qnl6hqnvuarlhejyr8s7d099esfuxamftaer407t0zcndhxfncsszlxzh7"], "cli_no_name")
+
 if __name__ == '__main__':
     unittest.main()

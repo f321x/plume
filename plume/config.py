@@ -16,15 +16,15 @@ def load_defaults() -> Dict[str, Any]:
             return json.load(f)
     except Exception as e:
         logger.error(f"Failed to load defaults.json: {e}")
-        return {"trusted_npubs": [], "relays": []}
+        return {"trusted_npubs": {}, "relays": []}
 
 def get_default_relays() -> Set[str]:
     defaults = load_defaults()
     return set(normalize_url(url) for url in defaults.get("relays", []))
 
-def get_default_trusted_npubs() -> Set[str]:
+def get_default_trusted_npubs() -> Dict[str, str]:
     defaults = load_defaults()
-    return set(defaults.get("trusted_npubs", []))
+    return defaults.get("trusted_npubs", {})
 
 def load_user_config() -> Dict[str, Any]:
     if os.path.exists(CONFIG_FILE):

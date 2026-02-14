@@ -1,7 +1,7 @@
 {
-  "trusted_npubs": [
-    "npub1z9n5ktfjrlpyywds9t7ljekr9cm9jjnzs27h702te5fy8p2c4dgs5zvycf"
-  ],
+  "trusted_npubs": {
+    "npub1z9n5ktfjrlpyywds9t7ljekr9cm9jjnzs27h702te5fy8p2c4dgs5zvycf": "f321x"
+  },
   "relays": [
     "wss://relay.damus.io",
     "wss://nos.lol",
@@ -9,6 +9,11 @@
     "wss://ftp.halifax.rwth-aachen.de/nostr",
     "wss://nostr.einundzwanzig.space",
     "wss://eu.purplerelay.com",
-    "wss://nostr.mom"
+    "wss://nostr.mom",
+    "wss://nostr.oxtr.dev",
+    "wss://theforest.nostr1.com",
+    "wss://nostr.lopp.social",
+    "wss://relay.westernbtc.com",
+    "wss://relay.day.ag"
   ]
 }

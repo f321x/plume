@@ -26,7 +26,8 @@ def get_relays(args) -> set[str]:
 
 def get_trusted_pubkeys(args) -> set[str]:
     config = load_user_config()
-    trusted_npubs = set(config.get("trusted_npubs", get_default_trusted_npubs()))
+    trusted_npubs_dict = config.get("trusted_npubs", get_default_trusted_npubs())
+    trusted_npubs = set(trusted_npubs_dict.keys())
     if args.trusted_pubkeys:
         trusted_npubs = set(args.trusted_pubkeys)
     
@@ -163,7 +164,7 @@ def config_command(args):
     
     if args.list:
         print("Current Configuration:")
-        print(f"* Trusted Npubs: {config.get('trusted_npubs', list(get_default_trusted_npubs()))}")
+        print(f"* Trusted Npubs: {config.get('trusted_npubs', get_default_trusted_npubs())}")
         print(f"* Relays: {config.get('relays', list(get_default_relays()))}")
         print(f"* Proxy: {config.get('proxy_url', '')}")
         return
@@ -187,17 +188,20 @@ def config_command(args):
             print(f"Relay not found: {args.remove_relay}")
 
     if args.add_trusted:
-        current_trusted = set(config.get("trusted_npubs", get_default_trusted_npubs()))
-        current_trusted.add(args.add_trusted)
-        config["trusted_npubs"] = list(current_trusted)
-        changed = True
-        print(f"Added trusted key: {args.add_trusted}")
+        current_trusted = config.get("trusted_npubs", get_default_trusted_npubs())
+        if args.add_trusted not in current_trusted:
+            current_trusted[args.add_trusted] = "cli_no_name"
+            config["trusted_npubs"] = current_trusted
+            changed = True
+            print(f"Added trusted key: {args.add_trusted}")
+        else:
+            print(f"Trusted key already exists: {args.add_trusted}")
 
     if args.remove_trusted:
-        current_trusted = set(config.get("trusted_npubs", get_default_trusted_npubs()))
+        current_trusted = config.get("trusted_npubs", get_default_trusted_npubs())
         if args.remove_trusted in current_trusted:
-            current_trusted.remove(args.remove_trusted)
-            config["trusted_npubs"] = list(current_trusted)
+            del current_trusted[args.remove_trusted]
+            config["trusted_npubs"] = current_trusted
             changed = True
             print(f"Removed trusted key: {args.remove_trusted}")
         else:
