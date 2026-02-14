@@ -6,6 +6,8 @@ Instead of sharing .asc files, file signatures are stored on Nostr relay servers
 Verification requires only the file itself and the trusted signer's public key, 
 accessible via a simple GUI or the CLI
 
+![screencast](https://github.com/user-attachments/assets/15a2df6b-d5ba-44fb-85a9-6bca3dacb747)
+
 ## Features
 * File signing
 * File verification
