@@ -251,7 +251,8 @@ class AuthenticityToolApp(tk.Tk):
 
         def save():
             self.proxy_url = proxy_entry.get().strip()
-            if not self.get_proxy_connector():
+            proxy_connector = asyncio.run_coroutine_threadsafe(self.get_proxy_connector(), self.loop).result()
+            if not proxy_connector:
                 messagebox.showerror("Error", f"Invalid proxy url: {self.proxy_url}", parent=dialog)
                 self.proxy_url = ""
                 return
@@ -260,9 +261,10 @@ class AuthenticityToolApp(tk.Tk):
 
         ttk.Button(dialog, text="Save", command=save).pack(pady=10)
 
-    def get_proxy_connector(self) -> Optional[ProxyConnector]:
+    async def get_proxy_connector(self) -> Optional[ProxyConnector]:
         if self.proxy_url:
             try:
+                # needs to run on asyncio event loop
                 return ProxyConnector.from_url(self.proxy_url)
             except Exception as e:
                 logger.error(f"Invalid proxy URL: {e}")
@@ -329,7 +331,7 @@ class AuthenticityToolApp(tk.Tk):
 
             async def sign_coro():
                 try:
-                    proxy = self.get_proxy_connector()
+                    proxy = await self.get_proxy_connector()
                     await NostrFileAuthenticityTool.publish_signature(
                         file_hash_sha256=file_hash,
                         private_key=nostr_privkey.raw_secret,
@@ -377,7 +379,7 @@ class AuthenticityToolApp(tk.Tk):
 
         async def verify_coro():
             try:
-                proxy = self.get_proxy_connector()
+                proxy = await self.get_proxy_connector()
                 found_signers = set()
                 async for signer_pubkey in NostrFileAuthenticityTool.verify_hash(
                     file_hash_sha256=file_hash,
