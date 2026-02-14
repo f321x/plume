@@ -2,6 +2,16 @@
 
 A tool to sign and verify files using Nostr. Think GPG, but user-friendly.
 
+Instead of sharing .asc files, file signatures are stored on Nostr relay servers. 
+Verification requires only the file itself and the trusted signer's public key, 
+accessible via a simple GUI or the CLI
+
+## Features
+* File signing
+* File verification
+* Connecting through SOCKS proxy
+* Graphical- and Command Line Interface
+
 ## Installation
 
 ### PyPI
